@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- AccessDeniedHandler 빈등록 -->
+<bean id="customAccessDenied"
+		class="org.zerock.security.CustomAccessDeniedHandler"></bean>
+<!-- CustomLoginSuccessHandler 빈등록 -->
+<bean id="customLoginSuccess"
+		class="org.zerock.security.CustomLoginSuccessHandler"></bean>
+<!-- CustomNoOpPasswordEncoder 클래스 빈 등록. 주석처리 후 customPasswordEncoder 등 -->
+<!-- <bean id="customPasswordEncoder" class="org.zerock.security.CustomNoOpPasswordEncoder"></bean>	-->
+<!-- BCryptPasswordEncoder 빈등록 -->
+ <bean id="bcryptPasswordEncoder"
+		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+<!-- customUserDetailsService 빈등록 -->
+ <bean id="customUserDetailsService"
+		class="org.zerock.security.CustomUserDetailsService"></bean>
+ 
+ 
+<!-- 기본설정 표현 -->
+<security:http>
+
+<!-- 접근제한설정  -->
+<security:intercept-url pattern="/sample/all"
+			access="permitAll" />
+
+<!-- 권한체크. ROLE_MEMBER 라는 권한이 있는 사용자만 접근  -->
+		<security:intercept-url
+			pattern="/sample/member" access="hasRole('ROLE_MEMBER')" />
+
+<!-- 권한체크. ROLE_ADMIN 라는 권한이 있는 사용자만 접근  -->
+	    <security:intercept-url pattern="/sample/admin"
+			access="hasRole('ROLE_ADMIN')" />
+
+ 
+ <!--<security:access-denied-handler error-page="/accessError"/>-->  <!-- 접근제한 -->  
+ <security:access-denied-handler ref="customAccessDenied"/>
+ 
+<!-- <security:form-login/> -->
+<!-- 커스텀 로그인 페이지 -->
+<security:form-login login-page="/customLogin"
+	authentication-success-handler-ref="customLoginSuccess"/> <!-- 로그인 성공후 처리를 담당하는 핸들러 -->
+ 
+ <!-- CSRF토큰생성 비활성화, CSRF토큰을 쿠키를 이용해서 처리하는등의 설정 지원 -->
+ <!-- <security:csrf disabled="true"/>  --> 
+ 
+ <!-- 로그아웃 후 직접로직 처리하기위해 특정 URI지정 후 핸들러 등록 -->
+ <security:logout logout-url="/customLogout" invalidate-session="true" 
+         delete-cookies="remember-me, JSESSION_ID"/>    <!-- 로그아웃시 쿠키삭제  -->
+ 
+ <!-- data-source-ref 지정-->
+<security:remember-me
+		data-source-ref="dataSource" token-validity-seconds="604800" />
+		
+ </security:http>
+
+
+<!--  Authentication-manager -->
+<security:authentication-manager>
+
+  <!-- UserDetailService -->
+  <!-- <security:authentication-provider> -->
+     
+    <!-- 스프링 시큐리티가 지정된 SQL을 이용하는 방식을 위해 아래내용 주석처리-->
+     
+    <!-- <security:user name="member" password="{noop}member" authorities="ROLE_MEMBER"/>  -->  <!-- PasswordEncoder대신 {noop} 삽입 -->
+     
+    <!-- <security:user name="admin" password="{noop}admin" authorities="ROLE_MEMBER, ROLE_ADMIN"/> -->
+        
+    <!-- </security:user-service> -->
+     
+     
+    <!-- 스프링 시큐리티가 지정된 SQL을 이용하는 방식을 위한 dataSource -->
+    <!--  <security:user-service>  -->
+   	<!--  <security:jdbc-user-service data-source-ref="dataSource" /> --> <!-- user-by-usernmae-query와 authorities-by-query를 위해 주석처리 -->
+   	
+    <!-- CustomNoOpPasswordEncoder 클래스. 주석처리 후 customPasswordEncoder 등록 -->
+    <!-- <security:password-encoder ref="customPasswordEncoder" /> -->
+    
+       		
+    <!-- '인증을 하는데 필요한쿼리(user-by-usernmae-query)'와 '권한을 확인하는데 필요한 쿼리(authorities-by-query)를 
+    jdbc-user-service 태그속성으로 지정 -->
+    <!-- <security:jdbc-user-service 
+		data-source-ref="dataSource" users-by-username-query="select userid , userpw 
+		, enabled from tbl_member where userid = ? " authorities-by-username-query="select 
+		userid, auth from tbl_member_auth where userid = ? " />  -->
+		
+		
+	<!-- customUserDetailsService -->
+  <security:authentication-provider
+			user-service-ref="customUserDetailsService">
+	
+	<!-- BCryptPasswordEncoder -->
+    <security:password-encoder ref="bcryptPasswordEncoder" /> 
+   	
+       		
+  </security:authentication-provider>
+
+</security:authentication-manager>
+
+
+</beans>

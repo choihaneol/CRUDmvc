@@ -1,0 +1,4 @@
+127.0.0.1 - - [01/May/2020:21:47:10 +0900] "GET / HTTP/1.1" 404 713
+0:0:0:0:0:0:0:1 - - [01/May/2020:21:47:11 +0900] "GET /WEB-INF/classes/org/zerock/controller/HomeController.java HTTP/1.1" 404 713
+0:0:0:0:0:0:0:1 - - [01/May/2020:21:47:26 +0900] "GET /board/list HTTP/1.1" 404 754
+0:0:0:0:0:0:0:1 - - [01/May/2020:21:47:26 +0900] "GET /favicon.ico HTTP/1.1" 404 754
